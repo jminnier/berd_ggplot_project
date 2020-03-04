@@ -91,7 +91,7 @@ ggplot(data = gapminder2011,
        title = "Barplot") + 
   theme_bw() + 
   scale_x_discrete(limits = c(NA,"others","oecd","g77")) + 
-  scale_fill_viridis_d(name = "World Bank Region", option = "C") +
+  scale_fill_viridis_d(name = "Water Source %", option = "C") +
   coord_flip()
 ```
 
