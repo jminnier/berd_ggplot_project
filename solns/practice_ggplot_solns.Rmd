@@ -1,0 +1,228 @@
+---
+title: "Practice ggplot2"
+date: '`r Sys.Date()`'
+output:   
+  html_document: 
+    number_sections: yes
+    theme: yeti
+    toc: yes
+    toc_float: yes
+---
+
+```{r setup, include=FALSE}
+# knitr setup options
+knitr::opts_chunk$set(
+  warning=FALSE, 
+  message=FALSE, 
+  echo = TRUE)
+
+# load all the packages
+library(tidyverse)
+library(lubridate)
+library(janitor)
+library(ggridges)
+library(gapminder)
+library(GGally)
+library(ggExtra)
+library(ggthemes)
+library(hrbrthemes)
+library(ggrepel)
+library(corrplot)
+library(ggpubr)
+library(pheatmap)
+library(plotly)
+```
+
+# R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. 
+
+# Data
+
+This code reads in the data we will need from the csv files:
+
+```{r data}
+# Note, changed paths to use here::here() since .Rmd is in different folder from Rproj folder
+gapminder2011 <- read_csv(here::here("data","Gapminder_vars_2011.csv"))
+gapminder2011_long <- read_csv(here::here("data","Gapminder_vars_2011_long.csv"))
+pasilla_data <- read_csv(here::here("data","gene_expr_pasilla_results.csv"))
+```
+
+# Bar plot
+
+This is the code from the slides. Change the following code to do the following:
+
+- map x to `members_oecd_g77` and fill to `WaterSourcePrct_2011_quart`
+- use `position="dodge"` as an argument to `geom_bar()`
+- change x axis label to "OECD g77 Members"
+- change the order of the x axis with `scale_x_discrete(limits = c(NA,"others","oecd","g77"))`
+- change the color of the bars to a different palette
+- flip the x and y axes so the bars are horizontal
+
+```{r}
+ggplot(data = gapminder2011,
+       aes(x = four_regions,
+           fill = eight_regions)) +
+  geom_bar() +
+  theme(
+    axis.text.x = element_text(angle = -30, hjust = 0)) +
+  labs(x = "World Regions",
+       y = "Number of countries",
+       title = "Barplot") + 
+  theme_bw() + 
+  scale_fill_viridis_d(name = "Subregions")
+```
+
+## Solution
+
+```{r}
+ggplot(data = gapminder2011,
+       aes(x = members_oecd_g77,
+           fill = WaterSourcePrct_2011_quart)) +
+  geom_bar(position="dodge") +
+  # if you want to keep width the same:
+  #geom_bar(position = position_dodge2(preserve="single"))+
+  theme(
+    axis.text.x = element_text(angle = -30, hjust = 0)) +
+  labs(x = "OECD g77 Members",
+       y = "Number of countries",
+       title = "Barplot") + 
+  theme_bw() + 
+  scale_x_discrete(limits = c(NA,"others","oecd","g77")) + 
+  scale_fill_viridis_d(name = "World Bank Region", option = "C") +
+  coord_flip()
+```
+
+
+
+
+
+
+# Histogram
+
+This is the code from the slides. Change the following code to do the following:
+
+- change the width of the histogram bins to 1.5 (hint: type `?geom_histogram` in the console to find the argument)
+- add a layer of `geom_density()` with alpha = 0.4
+- Why doesn't the density line show up? Add `aes(y=..density..)` to the histogram function arguments.
+- facet by `four_regions`
+- change the theme to `theme_bw()`
+- change the fill scale to viridis (discrete version is `scale_fill_viridis_d`) 
+- fill by `eight_regions`, color by `four_regions`
+- remove the color legend
+- change the title to "Histogram and Density of Life Expectancy"
+
+```{r}
+ggplot(data = gapminder2011,
+       aes(x = LifeExpectancyYrs,
+           fill = four_regions)) + 
+  geom_histogram() + 
+  scale_fill_discrete(
+    name = "Regions",
+    labels = c("Africa", "Americas", 
+               "Asia", "Europe")
+  ) + 
+  labs(
+    x = "Life Expectancy (years)",   
+    title = "Histogram"
+    ) + 
+  ggthemes::theme_economist() +
+  theme(
+    legend.position="bottom"
+  )
+```
+
+## Solution
+
+```{r}
+ggplot(data = gapminder2011,
+       aes(x = LifeExpectancyYrs,
+           color = four_regions,
+           fill = eight_regions)) + 
+  geom_histogram(aes(y=..density..),
+                 binwidth = 1.5) + 
+  geom_density(alpha = 0.4) + 
+  scale_fill_viridis_d(
+    name = "Regions"
+  ) + 
+  facet_wrap(~four_regions) + 
+  labs(
+    x = "Life Expectancy (years)",   
+    title = "Histogram and Density of Life Expectancy"
+    ) + 
+  theme_bw() + 
+  # remove legend for color
+  scale_color_discrete(guide = FALSE)
+```
+
+
+
+# Bubble plot
+
+This is the code from the bubble plot.
+
+- Change x to be mapped to `IncomePP`
+- Change the x label to be accurate
+- Change the scale of the x-axis to be on the log10 scale
+- Map shape to `members_oecd_g77`
+- Save the plot as an object called `p` and call `ggplotly(p)` but be sure to add the name of the country to the hover box (hint: use `key`)
+
+```{r}
+ggplot(data = gapminder2011,
+       aes(x = FoodSupplykcPPD,
+           y = LifeExpectancyYrs,
+           color = four_regions,
+           size = population)) + 
+  geom_point(alpha = 0.4) +
+  scale_color_colorblind(
+    name = "Regions",
+    labels = c("Africa", "Americas", 
+               "Asia", "Europe")
+  ) +
+  scale_size(
+    name = "Population Size (millions)",
+    breaks = c(1e08,5e08,1e09),
+    labels = c(100,500,1000)
+  ) +
+  hrbrthemes::theme_ipsum() +
+  labs(
+    x = "Daily Food Supply PP (kc)",  
+    y = "Life Expectancy (years)",   
+    title = "Bubbleplot"
+    )
+```
+
+## Solution
+
+
+```{r}
+p <- ggplot(data = gapminder2011,
+       aes(x = IncomePP,
+           y = LifeExpectancyYrs,
+           color = four_regions,
+           size = population,
+           shape = members_oecd_g77,
+           key = country)) + 
+  geom_point(alpha = 0.4) +
+  scale_color_colorblind(
+    name = "Regions",
+    labels = c("Africa", "Americas", 
+               "Asia", "Europe")
+  ) +
+  scale_size(
+    name = "Population Size (millions)",
+    breaks = c(1e08,5e08,1e09),
+    labels = c(100,500,1000)
+  ) +
+  hrbrthemes::theme_ipsum() +
+  labs(
+    x = "Income PP ($)",  
+    y = "Life Expectancy (years)",   
+    title = "Bubbleplot"
+    ) +
+  scale_x_log10()
+
+ggplotly(p)
+```
