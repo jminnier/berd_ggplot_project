@@ -25,7 +25,7 @@ library(gapminder)
 library(GGally)
 library(ggExtra)
 library(ggthemes)
-library(hrbrthemes)
+# library(hrbrthemes)
 library(ggrepel)
 library(corrplot)
 library(ggpubr)
@@ -154,7 +154,7 @@ ggplot(data = gapminder2011,
     breaks = c(1e08,5e08,1e09),
     labels = c(100,500,1000)
   ) +
-  hrbrthemes::theme_ipsum() +
+  theme_minimal() +
   labs(
     x = "Daily Food Supply PP (kc)",  
     y = "Life Expectancy (years)",   
