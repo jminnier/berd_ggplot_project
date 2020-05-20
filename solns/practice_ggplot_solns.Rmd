@@ -52,111 +52,48 @@ pasilla_data <- read_csv(here::here("data","gene_expr_pasilla_results.csv"))
 
 # Bar plot
 
-This is the code from the slides. Change the following code to do the following:
+This is the code from the slides. Change the code to do the following:
 
-- map x to `members_oecd_g77` and fill to `WaterSourcePrct_2011_quart`
+- use the variable `members_oecd_g77` for the bars and make the barplot horizontal instead of vertical
+- change the fill to `WaterSourcePrct_2011_quart`
 - use `position="dodge"` as an argument to `geom_bar()`
-- change x axis label to "OECD g77 Members"
-- change the order of the x axis with `scale_x_discrete(limits = c(NA,"others","oecd","g77"))`
+- change y axis label to "OECD g77 Members"
+- change the order of the y axis with `scale_y_discrete(limits = c(NA,"others","oecd","g77"))`
 - change the color of the bars to a different palette
-- flip the x and y axes so the bars are horizontal
 
 ```{r}
 ggplot(data = gapminder2011,
        aes(x = four_regions,
            fill = eight_regions)) +
   geom_bar() +
-  theme(
-    axis.text.x = element_text(angle = -30, hjust = 0)) +
   labs(x = "World Regions",
        y = "Number of countries",
        title = "Barplot") + 
   theme_bw() + 
+  theme(
+    axis.text.x = element_text(angle = -30, hjust = 0)) +
   scale_fill_viridis_d(name = "Subregions")
 ```
 
 ## Solution
 
+
 ```{r}
 ggplot(data = gapminder2011,
-       aes(x = members_oecd_g77,
+       aes(y = members_oecd_g77,
            fill = WaterSourcePrct_2011_quart)) +
+  # geom_bar() +
   geom_bar(position="dodge") +
   # if you want to keep width the same:
   #geom_bar(position = position_dodge2(preserve="single"))+
-  theme(
-    axis.text.x = element_text(angle = -30, hjust = 0)) +
-  labs(x = "OECD g77 Members",
-       y = "Number of countries",
+  labs(x = "Number of countries",
+       y = "OECD g77 Members",
        title = "Barplot") + 
-  theme_bw() + 
-  scale_x_discrete(limits = c(NA,"others","oecd","g77")) + 
+  scale_y_discrete(limits = c(NA,"others","oecd","g77")) +
   scale_fill_viridis_d(name = "Water Source %", option = "C") +
-  coord_flip()
+  # coord_flip() +
+  theme_bw() 
 ```
-
-
-
-
-
-
-# Histogram
-
-This is the code from the slides. Change the following code to do the following:
-
-- change the width of the histogram bins to 1.5 (hint: type `?geom_histogram` in the console to find the argument)
-- add a layer of `geom_density()` with alpha = 0.4
-- Why doesn't the density line show up? Add `aes(y=..density..)` to the histogram function arguments.
-- facet by `four_regions`
-- change the theme to `theme_bw()`
-- change the fill scale to viridis (discrete version is `scale_fill_viridis_d`) 
-- fill by `eight_regions`, color by `four_regions`
-- remove the color legend
-- change the title to "Histogram and Density of Life Expectancy"
-
-```{r}
-ggplot(data = gapminder2011,
-       aes(x = LifeExpectancyYrs,
-           fill = four_regions)) + 
-  geom_histogram() + 
-  scale_fill_discrete(
-    name = "Regions",
-    labels = c("Africa", "Americas", 
-               "Asia", "Europe")
-  ) + 
-  labs(
-    x = "Life Expectancy (years)",   
-    title = "Histogram"
-    ) + 
-  ggthemes::theme_economist() +
-  theme(
-    legend.position="bottom"
-  )
-```
-
-## Solution
-
-```{r}
-ggplot(data = gapminder2011,
-       aes(x = LifeExpectancyYrs,
-           color = four_regions,
-           fill = eight_regions)) + 
-  geom_histogram(aes(y=..density..),
-                 binwidth = 1.5) + 
-  geom_density(alpha = 0.4) + 
-  scale_fill_viridis_d(
-    name = "Regions"
-  ) + 
-  facet_wrap(~four_regions) + 
-  labs(
-    x = "Life Expectancy (years)",   
-    title = "Histogram and Density of Life Expectancy"
-    ) + 
-  theme_bw() + 
-  # remove legend for color
-  scale_color_discrete(guide = FALSE)
-```
-
 
 
 # Bubble plot
@@ -165,9 +102,8 @@ This is the code from the bubble plot.
 
 - Change x to be mapped to `IncomePP`
 - Change the x label to be accurate
-- Change the scale of the x-axis to be on the log10 scale
 - Map shape to `members_oecd_g77`
-- Save the plot as an object called `p` and call `ggplotly(p)` but be sure to add the name of the country to the hover box (hint: use `key`)
+- Change the scale of the x-axis to be on the log10 scale using `scale_x_log10`
 
 ```{r}
 ggplot(data = gapminder2011,
@@ -198,7 +134,7 @@ ggplot(data = gapminder2011,
 
 
 ```{r}
-p <- ggplot(data = gapminder2011,
+ggplot(data = gapminder2011,
        aes(x = IncomePP,
            y = LifeExpectancyYrs,
            color = four_regions,
@@ -211,6 +147,7 @@ p <- ggplot(data = gapminder2011,
     labels = c("Africa", "Americas", 
                "Asia", "Europe")
   ) +
+  scale_x_log10()+
   scale_size(
     name = "Population Size (millions)",
     breaks = c(1e08,5e08,1e09),
@@ -221,8 +158,79 @@ p <- ggplot(data = gapminder2011,
     x = "Income PP ($)",  
     y = "Life Expectancy (years)",   
     title = "Bubbleplot"
-    ) +
-  scale_x_log10()
-
-ggplotly(p)
+    ) 
 ```
+
+
+# Histogram
+
+This is the code from the slides. Change the following code to do the following:
+
+- change the width of the histogram bins to 1.5 (hint: type `?geom_histogram` in the - change the width of the histogram bins to 1.5 (hint: type `?geom_histogram` in the console to find the argument)
+- add a layer of `geom_density()` with alpha = 0.4
+- Why doesn't the density line show up? Add `aes(y=..density..)` to the histogram function arguments.
+- facet by `four_regions`
+- change the theme to `theme_bw()`
+- fill by `eight_regions`, color by `four_regions`
+- change the fill scale to viridis (discrete version is `scale_fill_viridis_d`) 
+- remove the color legend
+- change the title to "Histogram and Density of Life Expectancy"
+
+```{r}
+ggplot(data = gapminder2011,
+       aes(x = LifeExpectancyYrs,
+           fill = four_regions)) + 
+  geom_histogram() + 
+  scale_fill_discrete(
+    name = "Regions",
+    labels = c("Africa", "Americas", 
+               "Asia", "Europe")
+  ) + 
+  labs(
+    x = "Life Expectancy (years)",   
+    title = "Histogram"
+    ) + 
+  ggthemes::theme_economist() +
+  theme(
+    legend.position="bottom"
+  )
+```
+
+## Solution
+
+- change the width of the histogram bins to 1.5 (hint: type `?geom_histogram` in the console to find the argument)
+- add a layer of `geom_density()` with alpha = 0.4
+- Why doesn't the density line show up? Add `aes(y=..density..)` to the histogram function arguments.
+- facet by `four_regions`
+- change the theme to `theme_bw()`
+- fill by `eight_regions`, color by `four_regions`
+- change the fill scale to viridis (discrete version is `scale_fill_viridis_d`) 
+- remove the color legend
+- change the title to "Histogram and Density of Life Expectancy"
+
+
+```{r}
+ggplot(data = gapminder2011,
+       aes(x = LifeExpectancyYrs,
+           color = four_regions,
+           fill = eight_regions
+           )) + 
+  # geom_histogram(binwidth = 1.5) + 
+  geom_histogram(aes(y=..density..),
+                 binwidth = 1.5) +
+  geom_density(alpha = 0.4) + 
+  facet_wrap(~four_regions) + 
+  theme_bw() + 
+  scale_fill_viridis_d(name = "Regions") + 
+  # remove legend for color
+  scale_color_discrete(guide = FALSE) +
+  labs(
+    x = "Life Expectancy (years)",   
+    title = "Histogram and Density of Life Expectancy"
+    ) 
+```
+
+
+
+
+
